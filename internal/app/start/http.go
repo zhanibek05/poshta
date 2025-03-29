@@ -12,7 +12,7 @@ func HTTP(cfg *config.Config) {
 	http.HandleFunc("/healthcheck", func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
 		w.Write([]byte("status: Its all good man"))
-		logger.Info("Health check requested susldjkf", nil)
+		logger.Info("Health check requested", nil)
 	})
 	
 
