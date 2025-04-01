@@ -6,7 +6,7 @@ import (
 )
 
 func main() {
-	configFile := flag.String("config", "./configs/.env", "Path to configuration file")
+	configFile := flag.String("config", ".env", "Path to configuration file")
 	flag.Parse()
 
 	app.Run(*configFile)
