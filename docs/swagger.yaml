@@ -1,5 +1,33 @@
 basePath: /api
 definitions:
+  models.Chat:
+    properties:
+      created_at:
+        type: string
+      id:
+        type: integer
+      user1_id:
+        type: integer
+      user2_id:
+        type: integer
+    type: object
+  models.Message:
+    properties:
+      chat_id:
+        type: integer
+      created_at:
+        type: string
+      expired_at:
+        type: string
+      id:
+        type: integer
+      readed:
+        type: boolean
+      sender_id:
+        type: integer
+      text:
+        type: string
+    type: object
   models.User:
     properties:
       created_at:
@@ -26,6 +54,18 @@ definitions:
         type: string
       user_id:
         type: integer
+    type: object
+  reqresp.CreateChatRequest:
+    properties:
+      user1_id:
+        type: integer
+      user2_id:
+        type: integer
+    type: object
+  reqresp.ErrorResponse:
+    properties:
+      error:
+        type: string
     type: object
   reqresp.LoginRequest:
     properties:
@@ -192,6 +232,102 @@ paths:
       summary: Register new user
       tags:
       - auth
+  /chats:
+    post:
+      consumes:
+      - application/json
+      description: Create a new chat between two users
+      parameters:
+      - description: Create chat request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/reqresp.CreateChatRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Chat created successfully
+          schema:
+            $ref: '#/definitions/models.Chat'
+        "400":
+          description: Invalid request
+          schema:
+            $ref: '#/definitions/reqresp.ErrorResponse'
+        "500":
+          description: Server error
+          schema:
+            $ref: '#/definitions/reqresp.ErrorResponse'
+      summary: Create a new chat
+      tags:
+      - chats
+  /chats/{chat_id}/messages:
+    get:
+      consumes:
+      - application/json
+      description: Get all messages for a specific chat
+      parameters:
+      - description: Chat ID
+        in: path
+        name: chat_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Messages retrieved successfully
+          schema:
+            items:
+              $ref: '#/definitions/models.Message'
+            type: array
+        "400":
+          description: Invalid chat ID
+          schema:
+            $ref: '#/definitions/reqresp.ErrorResponse'
+        "404":
+          description: Chat not found
+          schema:
+            $ref: '#/definitions/reqresp.ErrorResponse'
+        "500":
+          description: Server error
+          schema:
+            $ref: '#/definitions/reqresp.ErrorResponse'
+      summary: Get chat messages
+      tags:
+      - chats
+  /chats/{user_id}/chats:
+    get:
+      consumes:
+      - application/json
+      description: Get all chats for a specific user
+      parameters:
+      - description: User ID
+        in: path
+        name: user_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Chats retrieved successfully
+          schema:
+            items:
+              $ref: '#/definitions/models.Chat'
+            type: array
+        "400":
+          description: Invalid user ID
+          schema:
+            $ref: '#/definitions/reqresp.ErrorResponse'
+        "500":
+          description: Server error
+          schema:
+            $ref: '#/definitions/reqresp.ErrorResponse'
+      summary: Get user chats
+      tags:
+      - chats
   /protected:
     get:
       consumes:

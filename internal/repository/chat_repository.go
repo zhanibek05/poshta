@@ -14,7 +14,7 @@ type ChatRepository interface {
 	GetByID(ctx context.Context, chatID int64) (*models.Chat, error)
 	GetByUserID(ctx context.Context, userID int64) ([]models.Chat, error)
 	GetByUsersID(ctx context.Context, user1ID, user2ID int64) (*models.Chat, error)
-	
+	GetMessages(ctx context.Context, chatID int64) ([]models.Message, error)
 }
 
 type chatRepository struct {
@@ -109,4 +109,40 @@ func (c *chatRepository) GetByUsersID(ctx context.Context, user1ID, user2ID int6
 		return nil, err
 	}
 	return &chat, nil
+}
+
+func (c *chatRepository) GetMessages(ctx context.Context, chatID int64) ([]models.Message, error) {
+    query := `
+        SELECT id, chat_id, sender_id, content, created_at, readed
+        FROM messages
+        WHERE chat_id = ?
+        ORDER BY created_at ASC
+    `
+    rows, err := c.db.QueryContext(ctx, query, chatID)
+    if err != nil {
+        return nil, err
+    }
+    defer rows.Close()
+    
+    var messages []models.Message
+    for rows.Next() {
+        var message models.Message
+        if err := rows.Scan(
+            &message.ID, 
+            &message.ChatID, 
+            &message.SenderID, 
+            &message.Content, 
+            &message.CreatedAt,
+            &message.Readed,
+        ); err != nil {
+            return nil, err
+        }
+        messages = append(messages, message)
+    }
+    
+    if err := rows.Err(); err != nil {
+        return nil, err
+    }
+    
+    return messages, nil
 }

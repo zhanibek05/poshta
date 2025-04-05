@@ -34,6 +34,7 @@ func Run(configFiles ...string) {
 
 	// init repos
 	userRepo := repository.NewUserRepository(conns.DB)
+	chatRepo := repository.NewChatRepository(conns.DB)
 
 	// init services
 
@@ -44,9 +45,11 @@ func Run(configFiles ...string) {
 		Issuer:          cfg.JWT.Issuer,
 	} )
 	
+	chatService := service.NewChatService(chatRepo, userRepo)
+
 	// init handlers
 	authHandler := handlers.NewAuthHandler(authService)
-
+	chatHandler := handlers.NewChatHandler(chatService)
 
 	// init jwt middleware
 
@@ -54,5 +57,5 @@ func Run(configFiles ...string) {
 
 	// Запуск HTTP сервера
 	logger.Info("Starting HTTP server", nil)
-	start.HTTP(cfg, authHandler, jwtMiddleware)
+	start.HTTP(cfg, authHandler, chatHandler, jwtMiddleware)
 }
