@@ -14,7 +14,7 @@ import (
 	_ "poshta/docs"
 )
 
-func HTTP(cfg *config.Config, authHandler *handlers.AuthHandler, chatHandler *handlers.ChatHandler, jwtMiddleware *middleware.JWTMiddleware) {
+func HTTP(cfg *config.Config, authHandler *handlers.AuthHandler, chatHandler *handlers.ChatHandler, messageHandler *handlers.MessageHandler , jwtMiddleware *middleware.JWTMiddleware) {
 	// Initialize mux router
 	router := mux.NewRouter()
 
@@ -34,10 +34,12 @@ func HTTP(cfg *config.Config, authHandler *handlers.AuthHandler, chatHandler *ha
 	router.HandleFunc("/api/auth/refresh", authHandler.RefreshToken).Methods("POST")
 
 	// Chat routes
-	router.HandleFunc("/api/chats", chatHandler.CreateChat).Methods("POST")
+	router.Handle("/api/chats", jwtMiddleware.CreateAuthenticatedHandler(chatHandler.CreateChat)).Methods("POST")
 	router.HandleFunc("/api/chats/{user_id}/chats", chatHandler.GetUserChats).Methods("GET")
 	router.HandleFunc("/api/chats/{chat_id}/messages", chatHandler.GetChatMessages).Methods("GET")
 
+	// Message routes
+	router.Handle("/api/message", jwtMiddleware.CreateAuthenticatedHandler(messageHandler.SendMessage)).Methods("POST")
 	// Protected route example
 	router.Handle("/api/protected", jwtMiddleware.CreateAuthenticatedHandler(authHandler.GetProtectedResource)).Methods("GET")
 

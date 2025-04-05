@@ -98,6 +98,15 @@ definitions:
     - password
     - username
     type: object
+  reqresp.SendMessageRequest:
+    properties:
+      chat_id:
+        type: integer
+      content:
+        type: string
+      sender_id:
+        type: integer
+    type: object
 host: localhost:8080
 info:
   contact:
@@ -238,6 +247,11 @@ paths:
       - application/json
       description: Create a new chat between two users
       parameters:
+      - description: Bearer token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: Create chat request
         in: body
         name: request
@@ -259,6 +273,8 @@ paths:
           description: Server error
           schema:
             $ref: '#/definitions/reqresp.ErrorResponse'
+      security:
+      - ApiKeyAuth: []
       summary: Create a new chat
       tags:
       - chats
@@ -328,6 +344,43 @@ paths:
       summary: Get user chats
       tags:
       - chats
+  /message:
+    post:
+      consumes:
+      - application/json
+      description: Send a message to a chat
+      parameters:
+      - description: Bearer token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: Create message request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/reqresp.SendMessageRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Chat created successfully
+          schema:
+            $ref: '#/definitions/models.Message'
+        "400":
+          description: Invalid request
+          schema:
+            $ref: '#/definitions/reqresp.ErrorResponse'
+        "500":
+          description: Server error
+          schema:
+            $ref: '#/definitions/reqresp.ErrorResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Send a message
+      tags:
+      - messages
   /protected:
     get:
       consumes:

@@ -26,6 +26,8 @@ func NewChatHandler(chatService service.ChatService) *ChatHandler {
 // @Tags chats
 // @Accept json
 // @Produce json
+// @Security ApiKeyAuth
+// @Param Authorization header string true "Bearer token"
 // @Param request body reqresp.CreateChatRequest true "Create chat request"
 // @Success 201 {object} models.Chat "Chat created successfully"
 // @Failure 400 {object} reqresp.ErrorResponse "Invalid request"

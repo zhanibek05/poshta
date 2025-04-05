@@ -9,6 +9,8 @@ import (
 	"poshta/internal/repository"
 	"poshta/internal/service"
 	"poshta/pkg/logger"
+
+	
 )
 
 func Run(configFiles ...string) {
@@ -35,6 +37,7 @@ func Run(configFiles ...string) {
 	// init repos
 	userRepo := repository.NewUserRepository(conns.DB)
 	chatRepo := repository.NewChatRepository(conns.DB)
+	messageRepo := repository.NewMessageRepository(conns.DB)
 
 	// init services
 
@@ -44,12 +47,13 @@ func Run(configFiles ...string) {
 		RefreshTokenTTL: cfg.JWT.RefreshTokenTTL,
 		Issuer:          cfg.JWT.Issuer,
 	} )
-	
 	chatService := service.NewChatService(chatRepo, userRepo)
+	messageService := service.NewMessageService(messageRepo, chatRepo)
 
 	// init handlers
 	authHandler := handlers.NewAuthHandler(authService)
 	chatHandler := handlers.NewChatHandler(chatService)
+	messageHandler := handlers.NewMessageHandler(messageService)
 
 	// init jwt middleware
 
@@ -57,5 +61,5 @@ func Run(configFiles ...string) {
 
 	// Запуск HTTP сервера
 	logger.Info("Starting HTTP server", nil)
-	start.HTTP(cfg, authHandler, chatHandler, jwtMiddleware)
+	start.HTTP(cfg, authHandler, chatHandler, messageHandler, jwtMiddleware)
 }
