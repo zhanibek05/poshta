@@ -40,6 +40,7 @@ func (s *chatService) CreateChat(ctx context.Context, req reqresp.CreateChatRequ
 
 	// Create chat
 	chat := models.Chat{
+		Topic:   req.Topic,
 		User1ID: req.User1ID,
 		User2ID: req.User2ID,
 	}

@@ -49,10 +49,10 @@ func (c *chatRepository) GetByID(ctx context.Context, chatID int64) (*models.Cha
 // Create implements ChatRepository.
 func (c *chatRepository) Create(ctx context.Context, chat *models.Chat) (int64, error) {
 	query := `
-		INSERT INTO chats (user1_id, user2_id, created_at )
-		VALUES (?, ?, NOW())
+		INSERT INTO chats (topic, user1_id, user2_id, created_at )
+		VALUES (?, ?, ?, NOW())
 	`
-	result, err := c.db.ExecContext(ctx, query, chat.User1ID, chat.User2ID)
+	result, err := c.db.ExecContext(ctx, query, chat.Topic, chat.User1ID, chat.User2ID)
 	
 	if err != nil {
 		return 0, err
@@ -70,7 +70,7 @@ func (c *chatRepository) Delete(ctx context.Context, chatID int64) error {
 // GetByUserID implements ChatRepository.
 func (c *chatRepository) GetByUserID(ctx context.Context, userID int64) ([]models.Chat, error) {
 	query := `
-		SELECT id, user1_id, user2_id, created_at
+		SELECT id, topic, user1_id, user2_id, created_at
 		FROM chats
 		WHERE user1_id = ? OR user2_id = ?
 	`
@@ -82,7 +82,7 @@ func (c *chatRepository) GetByUserID(ctx context.Context, userID int64) ([]model
 	var chats []models.Chat
 	for rows.Next() {
 		var chat models.Chat
-		if err := rows.Scan(&chat.ID, &chat.User1ID, &chat.User2ID, &chat.CreatedAt); err != nil {
+		if err := rows.Scan(&chat.ID, &chat.Topic, &chat.User1ID, &chat.User2ID, &chat.CreatedAt); err != nil {
 			return nil, err
 		}
 		chats = append(chats, chat)
@@ -99,13 +99,13 @@ func (c *chatRepository) GetByUserID(ctx context.Context, userID int64) ([]model
 
 func (c *chatRepository) GetByUsersID(ctx context.Context, user1ID, user2ID int64) (*models.Chat, error) {
 	query := `
-		SELECT id, user1_id, user2_id, created_at
+		SELECT id, topic, user1_id, user2_id, created_at
 		FROM chats
 		WHERE (user1_id = ? AND user2_id = ?) OR (user1_id = ? AND user2_id = ?)
 	`
 	row := c.db.QueryRowContext(ctx, query, user1ID, user2ID, user2ID, user1ID)
 	var chat models.Chat
-	if err := row.Scan(&chat.ID, &chat.User1ID, &chat.User2ID, &chat.CreatedAt); err != nil {
+	if err := row.Scan(&chat.ID, &chat.Topic, &chat.User1ID, &chat.User2ID, &chat.CreatedAt); err != nil {
 		return nil, err
 	}
 	return &chat, nil
