@@ -501,9 +501,6 @@
                 "id": {
                     "type": "integer"
                 },
-                "topic": {
-                    "type": "string"
-                },
                 "user1_id": {
                     "type": "integer"
                 },
@@ -584,13 +581,7 @@
         },
         "reqresp.CreateChatRequest": {
             "type": "object",
-            "required": [
-                "topic"
-            ],
             "properties": {
-                "topic": {
-                    "type": "string"
-                },
                 "user1_id": {
                     "type": "integer"
                 },

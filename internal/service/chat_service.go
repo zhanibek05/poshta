@@ -29,18 +29,16 @@ func NewChatService(chatRepo repository.ChatRepository, userRepo repository.User
 
 
 func (s *chatService) CreateChat(ctx context.Context, req reqresp.CreateChatRequest) (models.Chat, error) {
-	// Check if chat exists
-	// existingChat, err := s.chatRepo.GetByUsersID(ctx, int64(req.User1ID), int64(req.User2ID))
-	// if err != nil {
-	// 	return models.Chat{}, err
-	// }
-	// if existingChat != nil {
-	// 	return *existingChat, nil
-	// }
+	existingChat, err := s.chatRepo.GetByUsersID(ctx, int64(req.User1ID), int64(req.User2ID))
+	if err != nil {
+		return models.Chat{}, err
+	}
+	if existingChat != nil {
+		return *existingChat, nil
+	}
 
 	// Create chat
 	chat := models.Chat{
-		Topic:   req.Topic,
 		User1ID: req.User1ID,
 		User2ID: req.User2ID,
 	}

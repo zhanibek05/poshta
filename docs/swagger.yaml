@@ -6,8 +6,6 @@ definitions:
         type: string
       id:
         type: integer
-      topic:
-        type: string
       user1_id:
         type: integer
       user2_id:
@@ -61,14 +59,10 @@ definitions:
     type: object
   reqresp.CreateChatRequest:
     properties:
-      topic:
-        type: string
       user1_id:
         type: integer
       user2_id:
         type: integer
-    required:
-    - topic
     type: object
   reqresp.ErrorResponse:
     properties:

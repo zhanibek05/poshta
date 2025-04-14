@@ -507,9 +507,6 @@ const docTemplate = `{
                 "id": {
                     "type": "integer"
                 },
-                "topic": {
-                    "type": "string"
-                },
                 "user1_id": {
                     "type": "integer"
                 },
@@ -590,13 +587,7 @@ const docTemplate = `{
         },
         "reqresp.CreateChatRequest": {
             "type": "object",
-            "required": [
-                "topic"
-            ],
             "properties": {
-                "topic": {
-                    "type": "string"
-                },
                 "user1_id": {
                     "type": "integer"
                 },
