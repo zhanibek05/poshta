@@ -24,10 +24,12 @@ func NewMessageRepository(db *sqlx.DB) MessageRepository {
 
 func (m *messageRepository) Create(ctx context.Context, message *models.Message) (int64, error) {
 	query := `
-		INSERT INTO messages (chat_id, sender_id, content, created_at)
-		VALUES (?, ?, ?, NOW())
+		INSERT INTO messages (chat_id, sender_id, sender_name, content, created_at)
+		VALUES (?, ?, ?, ?, NOW())
 	`
-	result, err := m.db.ExecContext(ctx, query, message.ChatID, message.SenderID, message.Content)
+	// get sender name from user_id from user repository
+	
+	result, err := m.db.ExecContext(ctx, query, message.ChatID, message.SenderID, message.SenderName, message.Content)
 	if err != nil {
 		return 0, err
 	}
@@ -41,13 +43,13 @@ func (m *messageRepository) Create(ctx context.Context, message *models.Message)
 
 func (m *messageRepository) GetByID(ctx context.Context, messageID int64) (*models.Message, error) {
 	query := `
-		SELECT id, chat_id, sender_id, content, created_at
+		SELECT id, chat_id, sender_id, sender_name, content, created_at
 		FROM messages
 		WHERE id = ?	
 	`
 	row := m.db.QueryRowContext(ctx, query, messageID)
 	var message models.Message
-	if err := row.Scan(&message.ID, &message.ChatID, &message.SenderID, &message.Content, &message.CreatedAt); err != nil {
+	if err := row.Scan(&message.ID, &message.ChatID, &message.SenderID, &message.SenderName, &message.Content, &message.CreatedAt); err != nil {
 		return nil, err // Other error
 	}
 	return &message, nil

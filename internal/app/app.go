@@ -48,7 +48,7 @@ func Run(configFiles ...string) {
 		Issuer:          cfg.JWT.Issuer,
 	} )
 	chatService := service.NewChatService(chatRepo, userRepo)
-	messageService := service.NewMessageService(messageRepo, chatRepo)
+	messageService := service.NewMessageService(messageRepo, chatRepo, userRepo)
 
 	// init handlers
 	authHandler := handlers.NewAuthHandler(authService)

@@ -113,7 +113,7 @@ func (c *chatRepository) GetByUsersID(ctx context.Context, user1ID, user2ID int6
 
 func (c *chatRepository) GetMessages(ctx context.Context, chatID int64) ([]models.Message, error) {
     query := `
-        SELECT id, chat_id, sender_id, content, created_at, readed
+        SELECT id, chat_id, sender_id, sender_name, content, created_at, readed
         FROM messages
         WHERE chat_id = ?
         ORDER BY created_at ASC
@@ -131,6 +131,7 @@ func (c *chatRepository) GetMessages(ctx context.Context, chatID int64) ([]model
             &message.ID, 
             &message.ChatID, 
             &message.SenderID, 
+			&message.SenderName,
             &message.Content, 
             &message.CreatedAt,
             &message.Readed,

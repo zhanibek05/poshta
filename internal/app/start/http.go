@@ -7,6 +7,7 @@ import (
 	"poshta/internal/handler"
 	"poshta/internal/middleware"
 	"poshta/pkg/logger"
+	"github.com/rs/cors"
 
 	"github.com/gorilla/mux"
 	"github.com/sirupsen/logrus"
@@ -35,13 +36,14 @@ func HTTP(cfg *config.Config, authHandler *handlers.AuthHandler, chatHandler *ha
 
 	// Chat routes
 	router.Handle("/api/chats", jwtMiddleware.CreateAuthenticatedHandler(chatHandler.CreateChat)).Methods("POST")
-	router.HandleFunc("/api/chats/{user_id}/chats", chatHandler.GetUserChats).Methods("GET")
-	router.HandleFunc("/api/chats/{chat_id}/messages", chatHandler.GetChatMessages).Methods("GET")
+	router.Handle("/api/chats/{user_id}/chats", jwtMiddleware.CreateAuthenticatedHandler( chatHandler.GetUserChats)).Methods("GET")
+	router.Handle("/api/chats/{chat_id}/messages", jwtMiddleware.CreateAuthenticatedHandler(chatHandler.GetChatMessages)).Methods("GET")
 
 	// Message routes
 	router.Handle("/api/message", jwtMiddleware.CreateAuthenticatedHandler(messageHandler.SendMessage)).Methods("POST")
 	// Protected route example
 	router.Handle("/api/protected", jwtMiddleware.CreateAuthenticatedHandler(authHandler.GetProtectedResource)).Methods("GET")
+
 
 	// Start server
 	addr := fmt.Sprintf("%s:%d", cfg.HTTPServer.Host, cfg.HTTPServer.Port)
@@ -50,7 +52,17 @@ func HTTP(cfg *config.Config, authHandler *handlers.AuthHandler, chatHandler *ha
 		"swagger": fmt.Sprintf("http://%s/swagger/index.html", addr),
 	})
 
-	if err := http.ListenAndServe(addr, router); err != nil {
+	c := cors.New(cors.Options{
+		AllowedOrigins:   []string{"http://localhost:3000"},
+		AllowedMethods:   []string{"GET", "POST", "OPTIONS"},
+		AllowedHeaders:   []string{"Authorization", "Content-Type"},
+		AllowCredentials: true,
+	})
+
+	handlerWithCORS := c.Handler(router)
+
+	
+	if err := http.ListenAndServe(addr, handlerWithCORS); err != nil {
 		logger.Error("HTTP server failed", err, nil)
 	}
 }

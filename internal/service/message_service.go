@@ -15,12 +15,14 @@ type MessageService interface {
 type messageService struct {
 	messageRepo repository.MessageRepository
 	chatRepo    repository.ChatRepository
+	userRepo 	repository.UserRepository
 }
 
-func NewMessageService(messageRepo repository.MessageRepository, chatRepo repository.ChatRepository) MessageService {
+func NewMessageService(messageRepo repository.MessageRepository, chatRepo repository.ChatRepository, userRepo repository.UserRepository) MessageService {
 	return &messageService {
 		messageRepo: messageRepo,
 		chatRepo:    chatRepo,
+		userRepo: 	 userRepo,	
 	}
 }
 
@@ -36,9 +38,16 @@ func (s *messageService) SendMessage(ctx context.Context, message reqresp.SendMe
 		return 0, errors.New("chat not found")
 	}
 	// Create message
+
+	// get username from user_id
+	user, err := s.userRepo.GetByID(ctx, message.SenderID)
+
+
+
 	messageModel := models.Message{
 		ChatID:   message.ChatID,
 		SenderID: message.SenderID,
+		SenderName: user.Username,
 		Content:  message.Content,
 	}
 	messageID, err := s.messageRepo.Create(ctx, &messageModel)

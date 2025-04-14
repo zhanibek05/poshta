@@ -55,6 +55,8 @@ func (h *ChatHandler) CreateChat(w http.ResponseWriter, r *http.Request) {
 // @Tags chats
 // @Accept json
 // @Produce json
+// @Security ApiKeyAuth
+// @Param Authorization header string true "Bearer token"
 // @Param user_id path int true "User ID"
 // @Success 200 {array} models.Chat "Chats retrieved successfully"
 // @Failure 400 {object} reqresp.ErrorResponse "Invalid user ID"
@@ -83,6 +85,8 @@ func (h *ChatHandler) GetUserChats(w http.ResponseWriter, r *http.Request) {
 // @Tags chats
 // @Accept json
 // @Produce json
+// @Security ApiKeyAuth
+// @Param Authorization header string true "Bearer token"
 // @Param chat_id path int true "Chat ID"
 // @Success 200 {array} models.Message "Messages retrieved successfully"
 // @Failure 400 {object} reqresp.ErrorResponse "Invalid chat ID"

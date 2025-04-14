@@ -267,6 +267,11 @@ const docTemplate = `{
         },
         "/chats/{chat_id}/messages": {
             "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
                 "description": "Get all messages for a specific chat",
                 "consumes": [
                     "application/json"
@@ -279,6 +284,13 @@ const docTemplate = `{
                 ],
                 "summary": "Get chat messages",
                 "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Bearer token",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    },
                     {
                         "type": "integer",
                         "description": "Chat ID",
@@ -320,6 +332,11 @@ const docTemplate = `{
         },
         "/chats/{user_id}/chats": {
             "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
                 "description": "Get all chats for a specific user",
                 "consumes": [
                     "application/json"
@@ -332,6 +349,13 @@ const docTemplate = `{
                 ],
                 "summary": "Get user chats",
                 "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Bearer token",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    },
                     {
                         "type": "integer",
                         "description": "User ID",
@@ -514,6 +538,9 @@ const docTemplate = `{
                 },
                 "sender_id": {
                     "type": "integer"
+                },
+                "sender_name": {
+                    "type": "string"
                 },
                 "text": {
                     "type": "string"
