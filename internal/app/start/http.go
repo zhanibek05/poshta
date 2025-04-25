@@ -33,12 +33,14 @@ func HTTP(cfg *config.Config, authHandler *handlers.AuthHandler, chatHandler *ha
 	router.HandleFunc("/api/auth/register", authHandler.Register).Methods("POST")
 	router.HandleFunc("/api/auth/login", authHandler.Login).Methods("POST")
 	router.HandleFunc("/api/auth/refresh", authHandler.RefreshToken).Methods("POST")
+	// get user's public key
+	router.HandleFunc("/api/{user_id}/public_key", authHandler.GetUserPublicKey).Methods("GET")
 
 	// Chat routes
 	router.Handle("/api/chats", jwtMiddleware.CreateAuthenticatedHandler(chatHandler.CreateChat)).Methods("POST")
 	router.Handle("/api/chats/{user_id}/chats", jwtMiddleware.CreateAuthenticatedHandler( chatHandler.GetUserChats)).Methods("GET")
 	router.Handle("/api/chats/{chat_id}/messages", jwtMiddleware.CreateAuthenticatedHandler(chatHandler.GetChatMessages)).Methods("GET")
-
+	
 	// Message routes
 	router.Handle("/api/message", jwtMiddleware.CreateAuthenticatedHandler(messageHandler.SendMessage)).Methods("POST")
 	// Protected route example

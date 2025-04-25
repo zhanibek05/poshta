@@ -49,6 +49,8 @@ func (s *messageService) SendMessage(ctx context.Context, message reqresp.SendMe
 		SenderID: message.SenderID,
 		SenderName: user.Username,
 		Content:  message.Content,
+		EncryptedKey: message.EncryptedKey,
+		EncryptedKeySender: message.EncryptedKeySender,
 	}
 	messageID, err := s.messageRepo.Create(ctx, &messageModel)
 	if err != nil {

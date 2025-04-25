@@ -19,6 +19,7 @@ var (
 	ErrUserExists         = errors.New("user already exists")
 	ErrInternal           = errors.New("internal error")
 	ErrInvalidToken       = errors.New("invalid token")
+	ErrUserNotFound       = errors.New("user not found")
 )
 
 
@@ -36,6 +37,7 @@ type AuthService interface {
 	ValidateToken(tokenString string) (*jwt.Token, error)
 	GetUserFromToken(token *jwt.Token) (*models.User, error)
 	RefreshToken(refreshToken string) (*reqresp.AuthResponse, error)
+	GetUserPublicKey(userID int64) (string, error)
 }
 
 // authService implements AuthService interface
@@ -69,10 +71,12 @@ func (s *authService) Register(ctx context.Context, req reqresp.RegisterRequest)
 		return nil, fmt.Errorf("%w: %v", ErrInternal, err)
 	}
 
+
 	user := &models.User{
 		Username: req.Username,
 		Email:    req.Email,
 		Password: string(hashedPassword),
+		PublicKey: req.PublicKey,
 	}
 
 	// Create user
@@ -217,6 +221,18 @@ func (s *authService) GetUserFromToken(token *jwt.Token) (*models.User, error) {
 	}
 
 	return user, nil
+}
+
+func (s *authService) GetUserPublicKey(userID int64) (string, error) {
+	user, err := s.userRepo.GetByID(context.Background(), userID)
+	if err != nil {
+		return "", fmt.Errorf("%w: %v", ErrInternal, err)
+	}
+	if user == nil {
+		return "", ErrUserNotFound
+	}
+
+	return user.PublicKey, nil
 }
 
 // RefreshToken handles token refresh

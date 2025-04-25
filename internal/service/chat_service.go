@@ -6,11 +6,12 @@ import (
 	"poshta/internal/repository"
 	"poshta/pkg/reqresp"
 	"errors"
+	"fmt"
 )
 
 type ChatService interface {
 	CreateChat(ctx context.Context, chat reqresp.CreateChatRequest) (models.Chat, error)
-	GetUserChats(ctx context.Context, userID int64) ([]models.Chat, error)
+	GetUserChats(ctx context.Context, userID int64) ([]reqresp.GetChatResponse, error)
 	GetChatByID(ctx context.Context, chatID int64) (*models.Chat, error)
 	GetChatMessages(ctx context.Context, chatID int64) ([]models.Message, error)
 }
@@ -29,13 +30,13 @@ func NewChatService(chatRepo repository.ChatRepository, userRepo repository.User
 
 
 func (s *chatService) CreateChat(ctx context.Context, req reqresp.CreateChatRequest) (models.Chat, error) {
-	existingChat, err := s.chatRepo.GetByUsersID(ctx, int64(req.User1ID), int64(req.User2ID))
-	if err != nil {
-		return models.Chat{}, err
-	}
-	if existingChat != nil {
-		return *existingChat, nil
-	}
+	// existingChat, err := s.chatRepo.GetByUsersID(ctx, int64(req.User1ID), int64(req.User2ID))
+	// if err != nil {
+	// 	return models.Chat{}, err
+	// }
+	// if existingChat != nil {
+	// 	return *existingChat, nil
+	// }
 
 	// Create chat
 	chat := models.Chat{
@@ -60,26 +61,56 @@ func (s *chatService) CreateChat(ctx context.Context, req reqresp.CreateChatRequ
 }
 // get chats of users
 
-func (s *chatService) GetUserChats(ctx context.Context, userID int64) ([]models.Chat, error) {
-	// Check if user exists - using proper user repository
-	// existingUser, err := s.userRepo.GetByUsername(ctx, req.Username)
-	// if err != nil {
-	// 	return nil, fmt.Errorf("%w: %v", ErrInternal, err)
-	// }
-	// if existingUser != nil {
-	// 	return nil, ErrUserExists
-	// }
+func (s *chatService) GetUserChats(ctx context.Context, userID int64) ([]reqresp.GetChatResponse, error) {
+	
+	existingUser, err := s.userRepo.GetByID(ctx, userID)
+	if err != nil {
+		return nil, fmt.Errorf("%w: %v", ErrInternal, err)
+	}
+	if existingUser == nil {
+		return nil, ErrUserNotFound
+	}
 
 	// Get chats of user
+	
 	chats, err := s.chatRepo.GetByUserID(ctx, userID)
 	if err != nil {
 		return nil, err
 	}
-	return chats, nil
+
+	var responses []reqresp.GetChatResponse
+	for _, chat := range chats {
+		// Determine the other user in the chat
+		var otherUserID int64
+		if chat.User1ID == userID {
+			otherUserID = chat.User2ID
+		} else {
+			otherUserID = chat.User1ID
+		}
+
+		// Fetch the other user's info
+		otherUser, err := s.userRepo.GetByID(ctx, otherUserID)
+		if err != nil {
+			return nil, fmt.Errorf("failed to fetch other user: %w", err)
+		}
+		if otherUser == nil {
+			continue // or return error if you want strict behavior
+		}
+
+		responses = append(responses, reqresp.GetChatResponse{
+			ChatID:   chat.ID,
+			UserID:   otherUser.ID,
+			Username: otherUser.Username,
+			PublicKey: otherUser.PublicKey,
+		})
+	}
+
+	return responses, nil
 }
 
 func (s *chatService) GetChatByID(ctx context.Context, chatID int64) (*models.Chat, error) {
 	return s.chatRepo.GetByID(ctx, chatID)
+
 }
 
 func (s *chatService) GetChatMessages(ctx context.Context, chatID int64) ([]models.Message, error) {

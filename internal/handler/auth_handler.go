@@ -2,12 +2,15 @@ package handlers
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
+	"poshta/internal/middleware"
 	"poshta/internal/service"
 	"poshta/pkg/logger"
 	"poshta/pkg/reqresp"
-	"poshta/internal/middleware"
-	"fmt"
+	"strconv"
+
+	"github.com/gorilla/mux"
 )
 
 // AuthHandler handles auth-related HTTP requests
@@ -178,4 +181,43 @@ func(h *AuthHandler) GetProtectedResource(w http.ResponseWriter, r *http.Request
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
 		w.Write([]byte(fmt.Sprintf(`{"message":"Protected resource accessed", "user":"%v"}`, user)))
+}
+
+// GetUser godoc
+// @Summary Get user public key
+// @Description Get user public key 
+// @Tags user
+// @Accept json
+// @Produce json
+// @Param user_id path int true "User ID"
+// @Success 200 {object} map[string]string "User public key retrieved successfully"
+// @Failure 400 {object} map[string]string "Invalid user ID"
+// @Failure 500 {object} map[string]string "Service unavailable"
+// @Router /{user_id}/public_key [get]
+func (h *AuthHandler) GetUserPublicKey(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	vars := mux.Vars(r)
+	userID, err := strconv.ParseInt(vars["user_id"], 10, 64)
+	if err != nil {
+		respondWithError(w, http.StatusBadRequest, "Invalid user ID")
+		return
+	}
+
+	publicKey, err := h.authService.GetUserPublicKey(userID)
+	if err != nil {
+		logger.Error("Failed to get user's public key", err, nil)
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(map[string]string{
+		"user_id":    fmt.Sprintf("%d", userID),
+		"public_key": publicKey,
+	})
 }

@@ -13,6 +13,7 @@ type UserRepository interface {
 	GetByUsername(ctx context.Context, username string) (*models.User, error)
 	Create(ctx context.Context, user *models.User) (int64, error)
 	Update(ctx context.Context, user *models.User) error
+	GetUserPublicKey(ctx context.Context, userID int64) (string, error)
 }
 
 
@@ -29,7 +30,7 @@ func NewUserRepository(db *sqlx.DB) UserRepository {
 
 func (r *userRepository) GetByID(ctx context.Context, id int64) (*models.User, error) {
 	user := &models.User{}
-	query := `SELECT id, username, email, password, created_at, updated_at FROM users WHERE id = ?`
+	query := `SELECT id, username, email, password, created_at, updated_at, public_key FROM users WHERE id = ?`
 	err := r.db.GetContext(ctx, user, query, id)
 	if err != nil {
 		if err == sql.ErrNoRows {
@@ -57,10 +58,10 @@ func (r *userRepository) GetByUsername(ctx context.Context, username string) (*m
 
 func (r *userRepository) Create(ctx context.Context, user *models.User) (int64, error) {
 	query := `
-		INSERT INTO users (username, email, password, created_at, updated_at) 
-		VALUES (?, ?, ?, NOW(), NOW())
+		INSERT INTO users (username, email, password, public_key, created_at, updated_at) 
+		VALUES (?, ?, ?, ?, NOW(), NOW())
 	`
-	result, err := r.db.ExecContext(ctx, query, user.Username, user.Email, user.Password)
+	result, err := r.db.ExecContext(ctx, query, user.Username, user.Email, user.Password, user.PublicKey)
 	if err != nil {
 		return 0, err
 	}
@@ -76,4 +77,17 @@ func (r *userRepository) Update(ctx context.Context, user *models.User) error {
 	`
 	_, err := r.db.ExecContext(ctx, query, user.Username, user.Email, user.Password, user.ID)
 	return err
+}
+
+func (r * userRepository) GetUserPublicKey(ctx context.Context, userID int64) (string, error) {
+	query := `SELECT public_key FROM users WHERE id = ?`
+	var publicKey string
+	err := r.db.GetContext(ctx, &publicKey, query, userID)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return "", nil // User not found
+		}
+		return "", err
+	}
+	return publicKey, nil
 }

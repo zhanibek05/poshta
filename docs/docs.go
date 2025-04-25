@@ -495,6 +495,59 @@ const docTemplate = `{
                     }
                 }
             }
+        },
+        "/{user_id}/public_key": {
+            "get": {
+                "description": "Get user public key",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "user"
+                ],
+                "summary": "Get user public key",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "User ID",
+                        "name": "user_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "User public key retrieved successfully",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid user ID",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Service unavailable",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
         }
     },
     "definitions": {
@@ -521,7 +574,16 @@ const docTemplate = `{
                 "chat_id": {
                     "type": "integer"
                 },
+                "content": {
+                    "type": "string"
+                },
                 "created_at": {
+                    "type": "string"
+                },
+                "encrypted_key": {
+                    "type": "string"
+                },
+                "encrypted_key_sender": {
                     "type": "string"
                 },
                 "expired_at": {
@@ -538,9 +600,6 @@ const docTemplate = `{
                 },
                 "sender_name": {
                     "type": "string"
-                },
-                "text": {
-                    "type": "string"
                 }
             }
         },
@@ -555,6 +614,9 @@ const docTemplate = `{
                 },
                 "id": {
                     "type": "integer"
+                },
+                "public_key": {
+                    "type": "string"
                 },
                 "updated_at": {
                     "type": "string"
@@ -635,6 +697,7 @@ const docTemplate = `{
             "required": [
                 "email",
                 "password",
+                "public_key",
                 "username"
             ],
             "properties": {
@@ -644,6 +707,9 @@ const docTemplate = `{
                 "password": {
                     "type": "string",
                     "minLength": 8
+                },
+                "public_key": {
+                    "type": "string"
                 },
                 "username": {
                     "type": "string"
@@ -659,8 +725,17 @@ const docTemplate = `{
                 "content": {
                     "type": "string"
                 },
+                "encrypted_key": {
+                    "type": "string"
+                },
+                "encrypted_key_sender": {
+                    "type": "string"
+                },
                 "sender_id": {
                     "type": "integer"
+                },
+                "sender_name": {
+                    "type": "string"
                 }
             }
         }

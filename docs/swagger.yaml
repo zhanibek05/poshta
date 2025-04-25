@@ -15,7 +15,13 @@ definitions:
     properties:
       chat_id:
         type: integer
+      content:
+        type: string
       created_at:
+        type: string
+      encrypted_key:
+        type: string
+      encrypted_key_sender:
         type: string
       expired_at:
         type: string
@@ -27,8 +33,6 @@ definitions:
         type: integer
       sender_name:
         type: string
-      text:
-        type: string
     type: object
   models.User:
     properties:
@@ -38,6 +42,8 @@ definitions:
         type: string
       id:
         type: integer
+      public_key:
+        type: string
       updated_at:
         type: string
       username:
@@ -93,11 +99,14 @@ definitions:
       password:
         minLength: 8
         type: string
+      public_key:
+        type: string
       username:
         type: string
     required:
     - email
     - password
+    - public_key
     - username
     type: object
   reqresp.SendMessageRequest:
@@ -106,8 +115,14 @@ definitions:
         type: integer
       content:
         type: string
+      encrypted_key:
+        type: string
+      encrypted_key_sender:
+        type: string
       sender_id:
         type: integer
+      sender_name:
+        type: string
     type: object
 host: localhost:8080
 info:
@@ -123,6 +138,41 @@ info:
   title: Poshta API
   version: "1.0"
 paths:
+  /{user_id}/public_key:
+    get:
+      consumes:
+      - application/json
+      description: Get user public key
+      parameters:
+      - description: User ID
+        in: path
+        name: user_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: User public key retrieved successfully
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Invalid user ID
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Service unavailable
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Get user public key
+      tags:
+      - user
   /auth/login:
     post:
       consumes:
