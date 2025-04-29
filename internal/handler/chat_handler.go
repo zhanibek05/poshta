@@ -2,20 +2,17 @@ package handlers
 
 import (
 	"encoding/json"
-	"fmt"
 	"net/http"
-	"poshta/internal/service"
+	"poshta/internal/usecase"
 	"poshta/pkg/reqresp"
-	"strconv"
-
 	"github.com/gorilla/mux"
 )
 
 type ChatHandler struct {
-	chatService service.ChatService
+	chatService usecase.ChatService
 }
 
-func NewChatHandler(chatService service.ChatService) *ChatHandler {
+func NewChatHandler(chatService usecase.ChatService) *ChatHandler {
 	return &ChatHandler{
 		chatService: chatService,
 	}
@@ -64,14 +61,14 @@ func (h *ChatHandler) CreateChat(w http.ResponseWriter, r *http.Request) {
 // @Router /chats/{user_id}/chats [get]
 func (h *ChatHandler) GetUserChats(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
-	fmt.Println(vars, vars["user_id"])
-	userID, err := strconv.ParseInt(vars["user_id"], 10, 64)
-	if err != nil {
+	userID := vars["user_id"] // no more Atoi
+
+	if userID == "" {
 		respondWithError(w, http.StatusBadRequest, "Invalid user ID")
 		return
 	}
 
-	chats, err := h.chatService.GetUserChats(r.Context(), (userID))
+	chats, err := h.chatService.GetUserChats(r.Context(), userID) // pass string now
 	if err != nil {
 		respondWithError(w, http.StatusInternalServerError, err.Error())
 		return
@@ -79,6 +76,7 @@ func (h *ChatHandler) GetUserChats(w http.ResponseWriter, r *http.Request) {
 
 	respondWithJSON(w, http.StatusOK, chats)
 }
+
 
 // @Summary Get chat messages
 // @Description Get all messages for a specific chat
@@ -95,14 +93,15 @@ func (h *ChatHandler) GetUserChats(w http.ResponseWriter, r *http.Request) {
 // @Router /chats/{chat_id}/messages [get]
 func (h *ChatHandler) GetChatMessages(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
-	chatID, err := strconv.ParseInt(vars["chat_id"], 10, 64)
-	if err != nil {
+	chatID := vars["chat_id"] // no ParseInt anymore
+
+	if chatID == "" {
 		respondWithError(w, http.StatusBadRequest, "Invalid chat ID")
 		return
 	}
 
 	// First check if chat exists
-	chat, err := h.chatService.GetChatByID(r.Context(), chatID)
+	chat, err := h.chatService.GetChatByID(r.Context(), chatID) // pass string now
 	if err != nil {
 		respondWithError(w, http.StatusInternalServerError, err.Error())
 		return
@@ -112,7 +111,7 @@ func (h *ChatHandler) GetChatMessages(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	messages, err := h.chatService.GetChatMessages(r.Context(), chatID)
+	messages, err := h.chatService.GetChatMessages(r.Context(), chatID) // pass string
 	if err != nil {
 		respondWithError(w, http.StatusInternalServerError, err.Error())
 		return
@@ -120,6 +119,7 @@ func (h *ChatHandler) GetChatMessages(w http.ResponseWriter, r *http.Request) {
 
 	respondWithJSON(w, http.StatusOK, messages)
 }
+
 
 // Helper functions for responding with JSON
 func respondWithJSON(w http.ResponseWriter, code int, payload interface{}) {

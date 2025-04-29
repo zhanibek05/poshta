@@ -447,7 +447,62 @@ const docTemplate = `{
                 }
             }
         },
-        "/protected": {
+        "/messages/{id}": {
+            "delete": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Deletes a message by ID. Only the owner of the message can delete it.",
+                "tags": [
+                    "messages"
+                ],
+                "summary": "Delete a message",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Message ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid ID",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.ErrorResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/profile": {
             "get": {
                 "security": [
                     {
@@ -476,12 +531,10 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "API is healthy",
+                        "description": "User profile information",
                         "schema": {
                             "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
+                            "additionalProperties": true
                         }
                     },
                     "500": {
@@ -551,6 +604,14 @@ const docTemplate = `{
         }
     },
     "definitions": {
+        "handlers.ErrorResponse": {
+            "type": "object",
+            "properties": {
+                "message": {
+                    "type": "string"
+                }
+            }
+        },
         "models.Chat": {
             "type": "object",
             "properties": {
@@ -558,13 +619,13 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "id": {
-                    "type": "integer"
+                    "type": "string"
                 },
                 "user1_id": {
-                    "type": "integer"
+                    "type": "string"
                 },
                 "user2_id": {
-                    "type": "integer"
+                    "type": "string"
                 }
             }
         },
@@ -572,7 +633,7 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "chat_id": {
-                    "type": "integer"
+                    "type": "string"
                 },
                 "content": {
                     "type": "string"
@@ -581,9 +642,6 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "encrypted_key": {
-                    "type": "string"
-                },
-                "encrypted_key_sender": {
                     "type": "string"
                 },
                 "expired_at": {
@@ -596,7 +654,7 @@ const docTemplate = `{
                     "type": "boolean"
                 },
                 "sender_id": {
-                    "type": "integer"
+                    "type": "string"
                 },
                 "sender_name": {
                     "type": "string"
@@ -613,7 +671,7 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "id": {
-                    "type": "integer"
+                    "type": "string"
                 },
                 "public_key": {
                     "type": "string"
@@ -643,7 +701,7 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "user_id": {
-                    "type": "integer"
+                    "type": "string"
                 }
             }
         },
@@ -651,10 +709,10 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "user1_id": {
-                    "type": "integer"
+                    "type": "string"
                 },
                 "user2_id": {
-                    "type": "integer"
+                    "type": "string"
                 }
             }
         },
@@ -720,7 +778,7 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "chat_id": {
-                    "type": "integer"
+                    "type": "string"
                 },
                 "content": {
                     "type": "string"
@@ -732,7 +790,7 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "sender_id": {
-                    "type": "integer"
+                    "type": "string"
                 },
                 "sender_name": {
                     "type": "string"

@@ -7,6 +7,7 @@ import (
 	"poshta/internal/handler"
 	"poshta/internal/middleware"
 	"poshta/internal/repository"
+	"poshta/internal/usecase"
 	"poshta/internal/service"
 	"poshta/pkg/logger"
 
@@ -47,8 +48,8 @@ func Run(configFiles ...string) {
 		RefreshTokenTTL: cfg.JWT.RefreshTokenTTL,
 		Issuer:          cfg.JWT.Issuer,
 	} )
-	chatService := service.NewChatService(chatRepo, userRepo)
-	messageService := service.NewMessageService(messageRepo, chatRepo, userRepo)
+	chatService := usecase.NewChatService(chatRepo, userRepo)
+	messageService := usecase.NewMessageUseCase(messageRepo, chatRepo, userRepo)
 
 	// init handlers
 	authHandler := handlers.NewAuthHandler(authService)

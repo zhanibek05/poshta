@@ -4,11 +4,11 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"poshta/internal/domain/models"
 	"poshta/internal/middleware"
 	"poshta/internal/service"
 	"poshta/pkg/logger"
 	"poshta/pkg/reqresp"
-	"strconv"
 
 	"github.com/gorilla/mux"
 )
@@ -168,19 +168,42 @@ func (h *AuthHandler) RefreshToken(w http.ResponseWriter, r *http.Request) {
 // @Produce json
 // @Security ApiKeyAuth
 // @Param Authorization header string true "Bearer token"
-// @Success 200 {object} map[string]string "API is healthy"
+// @Success 200 {object} map[string]interface{} "User profile information"
 // @Failure 500 {object} map[string]string "Service unavailable"
-// @Router /protected [get]
-func(h *AuthHandler) GetProtectedResource(w http.ResponseWriter, r *http.Request) {
-		// Get user from context
-		if r.Method != http.MethodGet {
-			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-			return
-		}
-		user := r.Context().Value(middleware.UserContextKey)
-		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(http.StatusOK)
-		w.Write([]byte(fmt.Sprintf(`{"message":"Protected resource accessed", "user":"%v"}`, user)))
+// @Router /profile [get]
+func (h *AuthHandler) GetUserProfile(w http.ResponseWriter, r *http.Request) {
+    if r.Method != http.MethodGet {
+        http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+        return
+    }
+    
+    // Get user from context
+    user, ok := r.Context().Value(middleware.UserContextKey).(*models.User)
+    if !ok {
+        http.Error(w, "User not found in context", http.StatusInternalServerError)
+        return
+    }
+    
+    // Create response with user data
+    response := map[string]interface{}{
+        "message": "Protected resource accessed",
+        "user": map[string]interface{}{
+            "id":       user.ID,
+            "username": user.Username,
+            "email":    user.Email,
+
+        },
+    }
+    
+    jsonResponse, err := json.Marshal(response)
+    if err != nil {
+        http.Error(w, "Error creating response", http.StatusInternalServerError)
+        return
+    }
+    
+    w.Header().Set("Content-Type", "application/json")
+    w.WriteHeader(http.StatusOK)
+    w.Write(jsonResponse)
 }
 
 // GetUser godoc
@@ -201,8 +224,8 @@ func (h *AuthHandler) GetUserPublicKey(w http.ResponseWriter, r *http.Request) {
 	}
 
 	vars := mux.Vars(r)
-	userID, err := strconv.ParseInt(vars["user_id"], 10, 64)
-	if err != nil {
+	userID := vars["user_id"]
+	if userID == "" {
 		respondWithError(w, http.StatusBadRequest, "Invalid user ID")
 		return
 	}
@@ -217,7 +240,7 @@ func (h *AuthHandler) GetUserPublicKey(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(map[string]string{
-		"user_id":    fmt.Sprintf("%d", userID),
+		"user_id":    fmt.Sprintf("%s", userID),
 		"public_key": publicKey,
 	})
 }

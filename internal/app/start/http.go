@@ -43,9 +43,15 @@ func HTTP(cfg *config.Config, authHandler *handlers.AuthHandler, chatHandler *ha
 	
 	// Message routes
 	router.Handle("/api/message", jwtMiddleware.CreateAuthenticatedHandler(messageHandler.SendMessage)).Methods("POST")
-	// Protected route example
-	router.Handle("/api/protected", jwtMiddleware.CreateAuthenticatedHandler(authHandler.GetProtectedResource)).Methods("GET")
+	router.Handle("/api/messages/{id}", jwtMiddleware.CreateAuthenticatedHandler(messageHandler.DeleteMessage)).Methods("DELETE")
 
+
+	// Protected route example
+	router.Handle("/api/profile", jwtMiddleware.CreateAuthenticatedHandler(authHandler.GetUserProfile)).Methods("GET")
+
+	// websocket
+
+	http.HandleFunc("/ws", messageHandler.WsHandler)
 
 	// Start server
 	addr := fmt.Sprintf("%s:%d", cfg.HTTPServer.Host, cfg.HTTPServer.Port)

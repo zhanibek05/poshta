@@ -1,27 +1,30 @@
 basePath: /api
 definitions:
+  handlers.ErrorResponse:
+    properties:
+      message:
+        type: string
+    type: object
   models.Chat:
     properties:
       created_at:
         type: string
       id:
-        type: integer
+        type: string
       user1_id:
-        type: integer
+        type: string
       user2_id:
-        type: integer
+        type: string
     type: object
   models.Message:
     properties:
       chat_id:
-        type: integer
+        type: string
       content:
         type: string
       created_at:
         type: string
       encrypted_key:
-        type: string
-      encrypted_key_sender:
         type: string
       expired_at:
         type: string
@@ -30,7 +33,7 @@ definitions:
       readed:
         type: boolean
       sender_id:
-        type: integer
+        type: string
       sender_name:
         type: string
     type: object
@@ -41,7 +44,7 @@ definitions:
       email:
         type: string
       id:
-        type: integer
+        type: string
       public_key:
         type: string
       updated_at:
@@ -61,14 +64,14 @@ definitions:
       token_type:
         type: string
       user_id:
-        type: integer
+        type: string
     type: object
   reqresp.CreateChatRequest:
     properties:
       user1_id:
-        type: integer
+        type: string
       user2_id:
-        type: integer
+        type: string
     type: object
   reqresp.ErrorResponse:
     properties:
@@ -112,7 +115,7 @@ definitions:
   reqresp.SendMessageRequest:
     properties:
       chat_id:
-        type: integer
+        type: string
       content:
         type: string
       encrypted_key:
@@ -120,7 +123,7 @@ definitions:
       encrypted_key_sender:
         type: string
       sender_id:
-        type: integer
+        type: string
       sender_name:
         type: string
     type: object
@@ -447,7 +450,43 @@ paths:
       summary: Send a message
       tags:
       - messages
-  /protected:
+  /messages/{id}:
+    delete:
+      description: Deletes a message by ID. Only the owner of the message can delete
+        it.
+      parameters:
+      - description: Message ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      responses:
+        "204":
+          description: No Content
+          schema:
+            type: string
+        "400":
+          description: Invalid ID
+          schema:
+            $ref: '#/definitions/handlers.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handlers.ErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/handlers.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Delete a message
+      tags:
+      - messages
+  /profile:
     get:
       consumes:
       - application/json
@@ -462,10 +501,9 @@ paths:
       - application/json
       responses:
         "200":
-          description: API is healthy
+          description: User profile information
           schema:
-            additionalProperties:
-              type: string
+            additionalProperties: true
             type: object
         "500":
           description: Service unavailable

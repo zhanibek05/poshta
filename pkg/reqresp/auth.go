@@ -5,7 +5,7 @@ type AuthResponse struct {
 	RefreshToken string `json:"refresh_token"`
 	TokenType    string `json:"token_type"`
 	ExpiresIn    int64  `json:"expires_in"` // Seconds until token expires
-	UserID	     int64  `json:"user_id"`
+	UserID	     string  `json:"user_id"`
 }
 
 type LoginRequest struct {

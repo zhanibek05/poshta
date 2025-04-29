@@ -4,16 +4,16 @@ import (
 	"context"
 	"database/sql"
 	"poshta/internal/domain/models"
-
+	"github.com/google/uuid"
 	"github.com/jmoiron/sqlx"
 )
 
 type UserRepository interface {
-	GetByID(ctx context.Context, id int64) (*models.User, error)
+	GetByID(ctx context.Context, id string) (*models.User, error)
 	GetByUsername(ctx context.Context, username string) (*models.User, error)
-	Create(ctx context.Context, user *models.User) (int64, error)
+	Create(ctx context.Context, user *models.User) (string, error)
 	Update(ctx context.Context, user *models.User) error
-	GetUserPublicKey(ctx context.Context, userID int64) (string, error)
+	GetUserPublicKey(ctx context.Context, userID string) (string, error)
 }
 
 
@@ -28,7 +28,7 @@ func NewUserRepository(db *sqlx.DB) UserRepository {
 }
 
 
-func (r *userRepository) GetByID(ctx context.Context, id int64) (*models.User, error) {
+func (r *userRepository) GetByID(ctx context.Context, id string) (*models.User, error) {
 	user := &models.User{}
 	query := `SELECT id, username, email, password, created_at, updated_at, public_key FROM users WHERE id = ?`
 	err := r.db.GetContext(ctx, user, query, id)
@@ -56,16 +56,25 @@ func (r *userRepository) GetByUsername(ctx context.Context, username string) (*m
 }
 
 
-func (r *userRepository) Create(ctx context.Context, user *models.User) (int64, error) {
+func (r *userRepository) Create(ctx context.Context, user *models.User) (string, error) {
+
+	userID := uuid.New().String()
 	query := `
-		INSERT INTO users (username, email, password, public_key, created_at, updated_at) 
-		VALUES (?, ?, ?, ?, NOW(), NOW())
+		INSERT INTO users (id, username, email, password, public_key, created_at, updated_at) 
+		VALUES (?, ?, ?, ?, ?, NOW(), NOW())
 	`
-	result, err := r.db.ExecContext(ctx, query, user.Username, user.Email, user.Password, user.PublicKey)
+	_, err := r.db.ExecContext(ctx, query, 
+		userID,
+		user.Username, 
+		user.Email, 
+		user.Password, 
+		user.PublicKey)
+
+
 	if err != nil {
-		return 0, err
+		return "", err
 	}
-	return result.LastInsertId()
+	return userID, nil
 }
 
 // Update updates an existing user
@@ -79,7 +88,7 @@ func (r *userRepository) Update(ctx context.Context, user *models.User) error {
 	return err
 }
 
-func (r * userRepository) GetUserPublicKey(ctx context.Context, userID int64) (string, error) {
+func (r * userRepository) GetUserPublicKey(ctx context.Context, userID string) (string, error) {
 	query := `SELECT public_key FROM users WHERE id = ?`
 	var publicKey string
 	err := r.db.GetContext(ctx, &publicKey, query, userID)
