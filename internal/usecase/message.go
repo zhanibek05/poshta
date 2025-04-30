@@ -44,8 +44,6 @@ func (s *messageUseCase) SendMessage(ctx context.Context, message reqresp.SendMe
 	// get username from user_id
 	user, err := s.userRepo.GetByID(ctx, message.SenderID)
 
-
-
 	messageModel := models.Message{
 		ChatID:   message.ChatID,
 		SenderID: message.SenderID,

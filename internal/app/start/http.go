@@ -15,7 +15,7 @@ import (
 	_ "poshta/docs"
 )
 
-func HTTP(cfg *config.Config, authHandler *handlers.AuthHandler, chatHandler *handlers.ChatHandler, messageHandler *handlers.MessageHandler , jwtMiddleware *middleware.JWTMiddleware) {
+func HTTP(cfg *config.Config, authHandler *handlers.AuthHandler, chatHandler *handlers.ChatHandler, messageHandler *handlers.MessageHandler , wsHandler *handlers.WSHandler ,jwtMiddleware *middleware.JWTMiddleware) {
 	// Initialize mux router
 	router := mux.NewRouter()
 
@@ -50,8 +50,8 @@ func HTTP(cfg *config.Config, authHandler *handlers.AuthHandler, chatHandler *ha
 	router.Handle("/api/profile", jwtMiddleware.CreateAuthenticatedHandler(authHandler.GetUserProfile)).Methods("GET")
 
 	// websocket
-
-	http.HandleFunc("/ws", messageHandler.WsHandler)
+	router.HandleFunc("/ws", wsHandler.ServeWS)
+	
 
 	// Start server
 	addr := fmt.Sprintf("%s:%d", cfg.HTTPServer.Host, cfg.HTTPServer.Port)
@@ -62,7 +62,7 @@ func HTTP(cfg *config.Config, authHandler *handlers.AuthHandler, chatHandler *ha
 
 	c := cors.New(cors.Options{
 		AllowedOrigins:   []string{"http://localhost:3000"},
-		AllowedMethods:   []string{"GET", "POST", "OPTIONS"},
+		AllowedMethods:   []string{"GET", "POST","DELETE", "OPTIONS"},
 		AllowedHeaders:   []string{"Authorization", "Content-Type"},
 		AllowCredentials: true,
 	})

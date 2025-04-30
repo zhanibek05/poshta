@@ -4,14 +4,13 @@ import (
 	"poshta/internal/app/config"
 	"poshta/internal/app/connections"
 	"poshta/internal/app/start"
+	"poshta/internal/app/ws"
 	"poshta/internal/handler"
 	"poshta/internal/middleware"
 	"poshta/internal/repository"
-	"poshta/internal/usecase"
 	"poshta/internal/service"
+	"poshta/internal/usecase"
 	"poshta/pkg/logger"
-
-	
 )
 
 func Run(configFiles ...string) {
@@ -51,10 +50,17 @@ func Run(configFiles ...string) {
 	chatService := usecase.NewChatService(chatRepo, userRepo)
 	messageService := usecase.NewMessageUseCase(messageRepo, chatRepo, userRepo)
 
+
+	hub := ws.NewHub()
+	go hub.Run()
+
 	// init handlers
 	authHandler := handlers.NewAuthHandler(authService)
 	chatHandler := handlers.NewChatHandler(chatService)
 	messageHandler := handlers.NewMessageHandler(messageService)
+	
+
+	wsHandler := handlers.NewWSHandler(hub, messageService, chatService)
 
 	// init jwt middleware
 
@@ -62,5 +68,5 @@ func Run(configFiles ...string) {
 
 	// Запуск HTTP сервера
 	logger.Info("Starting HTTP server", nil)
-	start.HTTP(cfg, authHandler, chatHandler, messageHandler, jwtMiddleware)
+	start.HTTP(cfg, authHandler, chatHandler, messageHandler, wsHandler,  jwtMiddleware)
 }
