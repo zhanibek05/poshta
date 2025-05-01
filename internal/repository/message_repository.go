@@ -26,11 +26,11 @@ func NewMessageRepository(db *sqlx.DB) MessageRepository {
 func (m *messageRepository) Create(ctx context.Context, message *models.Message) (int64, error) {
 	query := `
 		INSERT INTO messages (chat_id, sender_id, sender_name, content, encrypted_key, created_at)
-		VALUES (?, ?, ?, ?, ?, NOW())
+		VALUES (?, ?, ?, ?, ?, ?)
 	`
 	// get sender name from user_id from user repository
 	
-	result, err := m.db.ExecContext(ctx, query, message.ChatID, message.SenderID, message.SenderName, message.Content, message.EncryptedKey,)
+	result, err := m.db.ExecContext(ctx, query, message.ChatID, message.SenderID, message.SenderName, message.Content, message.EncryptedKey, message.CreatedAt)
 	if err != nil {
 		return 0, err
 	}

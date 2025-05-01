@@ -7,6 +7,7 @@ import (
 	"poshta/internal/domain/models"
 	"poshta/internal/repository"
 	"poshta/pkg/reqresp"
+	"time"
 )
 
 type MessageUseCase interface {
@@ -50,6 +51,7 @@ func (s *messageUseCase) SendMessage(ctx context.Context, message reqresp.SendMe
 		SenderName: user.Username,
 		Content:  message.Content,
 		EncryptedKey: message.EncryptedKey,
+		CreatedAt: time.Now().UTC(),
 	}
 	messageID, err := s.messageRepo.Create(ctx, &messageModel)
 	if err != nil {

@@ -333,6 +333,44 @@ paths:
       summary: Create a new chat
       tags:
       - chats
+  /chats/{chat_id}/chats:
+    delete:
+      consumes:
+      - application/json
+      description: Delete user chat
+      parameters:
+      - description: Bearer token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: Chat ID
+        in: path
+        name: chat_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Chats deleted successfully
+          schema:
+            items:
+              type: string
+            type: array
+        "400":
+          description: Invalid chat ID
+          schema:
+            $ref: '#/definitions/reqresp.ErrorResponse'
+        "500":
+          description: Server error
+          schema:
+            $ref: '#/definitions/reqresp.ErrorResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Delete user chat
+      tags:
+      - chats
   /chats/{chat_id}/messages:
     get:
       consumes:
@@ -348,7 +386,7 @@ paths:
         in: path
         name: chat_id
         required: true
-        type: integer
+        type: string
       produces:
       - application/json
       responses:
@@ -390,7 +428,7 @@ paths:
         in: path
         name: user_id
         required: true
-        type: integer
+        type: string
       produces:
       - application/json
       responses:

@@ -3,14 +3,16 @@ package repository
 import (
 	"context"
 	"database/sql"
+	"fmt"
 	"poshta/internal/domain/models"
+
 	"github.com/google/uuid"
 	"github.com/jmoiron/sqlx"
 )
 
 type ChatRepository interface {
 	Create(ctx context.Context, chat *models.Chat) (string, error)
-	Delete(ctx context.Context, chatID string) error
+	Delete(ctx context.Context, chatID string) (string, error)
 	GetByID(ctx context.Context, chatID string) (*models.Chat, error)
 	GetByUserID(ctx context.Context, userID string) ([]models.Chat, error)
 	GetByUsersID(ctx context.Context, user1ID, user2ID string) (*models.Chat, error)
@@ -66,8 +68,19 @@ func (c *chatRepository) Create(ctx context.Context, chat *models.Chat) (string,
 }
 
 // Delete implements ChatRepository.
-func (c *chatRepository) Delete(ctx context.Context, chatID string) error {
-	panic("unimplemented")
+func (c *chatRepository) Delete(ctx context.Context, chatID string) (string, error) {
+	query := `
+		DELETE FROM chats
+		WHERE ID = ?
+	`
+	_, err := c.db.ExecContext(ctx, query, chatID)
+
+	if err != nil {
+		return "", err
+	}
+	fmt.Print(chatID)
+	return chatID, nil
+
 }
 
 

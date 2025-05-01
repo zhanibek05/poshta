@@ -40,6 +40,7 @@ func HTTP(cfg *config.Config, authHandler *handlers.AuthHandler, chatHandler *ha
 	router.Handle("/api/chats", jwtMiddleware.CreateAuthenticatedHandler(chatHandler.CreateChat)).Methods("POST")
 	router.Handle("/api/chats/{user_id}/chats", jwtMiddleware.CreateAuthenticatedHandler( chatHandler.GetUserChats)).Methods("GET")
 	router.Handle("/api/chats/{chat_id}/messages", jwtMiddleware.CreateAuthenticatedHandler(chatHandler.GetChatMessages)).Methods("GET")
+	router.Handle("/api/chats/{chat_id}/chats", jwtMiddleware.CreateAuthenticatedHandler(chatHandler.DeleteChat)).Methods("DELETE")
 	
 	// Message routes
 	router.Handle("/api/message", jwtMiddleware.CreateAuthenticatedHandler(messageHandler.SendMessage)).Methods("POST")

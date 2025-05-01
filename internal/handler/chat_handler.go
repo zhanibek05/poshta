@@ -47,6 +47,39 @@ func (h *ChatHandler) CreateChat(w http.ResponseWriter, r *http.Request) {
 	respondWithJSON(w, http.StatusCreated, chat)
 }
 
+
+// @Summary Delete user chat
+// @Description Delete user chat
+// @Tags chats
+// @Accept json
+// @Produce json
+// @Security ApiKeyAuth
+// @Param Authorization header string true "Bearer token"
+// @Param chat_id path string true "Chat ID"
+// @Success 200 {array} string "Chats deleted successfully"
+// @Failure 400 {object} reqresp.ErrorResponse "Invalid chat ID"
+// @Failure 500 {object} reqresp.ErrorResponse "Server error"
+// @Router /chats/{chat_id}/chats [delete]
+func (h* ChatHandler) DeleteChat(w http.ResponseWriter, r *http.Request){
+	vars := mux.Vars(r)
+	chatID := vars["chat_id"]
+
+	if chatID == "" {
+		respondWithError(w, http.StatusBadRequest, "Invalid chat ID")
+		return
+	}
+
+	_, err := h.chatService.DeleteChat(r.Context(), chatID)
+
+	if err != nil {
+		respondWithError(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	respondWithJSON(w, http.StatusOK, chatID)
+
+}
+
 // @Summary Get user chats
 // @Description Get all chats for a specific user
 // @Tags chats
@@ -54,7 +87,7 @@ func (h *ChatHandler) CreateChat(w http.ResponseWriter, r *http.Request) {
 // @Produce json
 // @Security ApiKeyAuth
 // @Param Authorization header string true "Bearer token"
-// @Param user_id path int true "User ID"
+// @Param user_id path string true "User ID"
 // @Success 200 {array} models.Chat "Chats retrieved successfully"
 // @Failure 400 {object} reqresp.ErrorResponse "Invalid user ID"
 // @Failure 500 {object} reqresp.ErrorResponse "Server error"
@@ -85,7 +118,7 @@ func (h *ChatHandler) GetUserChats(w http.ResponseWriter, r *http.Request) {
 // @Produce json
 // @Security ApiKeyAuth
 // @Param Authorization header string true "Bearer token"
-// @Param chat_id path int true "Chat ID"
+// @Param chat_id path string true "Chat ID"
 // @Success 200 {array} models.Message "Messages retrieved successfully"
 // @Failure 400 {object} reqresp.ErrorResponse "Invalid chat ID"
 // @Failure 404 {object} reqresp.ErrorResponse "Chat not found"
@@ -134,3 +167,4 @@ func respondWithError(w http.ResponseWriter, code int, message string) {
 		Error: message,
 	})
 }
+

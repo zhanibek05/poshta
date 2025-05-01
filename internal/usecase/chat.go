@@ -22,6 +22,7 @@ type ChatService interface {
 	GetUserChats(ctx context.Context, userID string) ([]reqresp.GetChatResponse, error)
 	GetChatByID(ctx context.Context, chatID string) (*models.Chat, error)
 	GetChatMessages(ctx context.Context, chatID string) ([]models.Message, error)
+	DeleteChat(ctx context.Context, chatID string) (string, error)
 }
 
 type chatService struct {
@@ -123,4 +124,9 @@ func (s *chatService) GetChatByID(ctx context.Context, chatID string) (*models.C
 
 func (s *chatService) GetChatMessages(ctx context.Context, chatID string) ([]models.Message, error) {
 	return s.chatRepo.GetMessages(ctx, chatID)
+}
+
+func (s* chatService) DeleteChat(ctx context.Context, chatID string) (string, error) {
+	// _, chats := s.GetUserChats(ctx, )
+	return s.chatRepo.Delete(ctx, chatID)
 }

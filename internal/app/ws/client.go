@@ -42,6 +42,8 @@ func (c *Client) ReadPump(messageUseCase usecase.MessageUseCase, chatUseCase use
 			EncryptedKey: msg.EncryptedKey,
 		})
 
+
+
 		// получаем чат и второго пользователя
 		chat, _ := chatUseCase.GetChatByID(context.Background(), msg.ChatID)
 		recipient := chat.User1ID
