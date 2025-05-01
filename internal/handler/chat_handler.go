@@ -128,6 +128,13 @@ func (h *ChatHandler) GetChatMessages(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	chatID := vars["chat_id"] // no ParseInt anymore
 
+	 // Получаем юзера из контекста
+	 user, err := GetUserFromContext(r.Context())
+	 if err != nil {
+		 http.Error(w, "unauthorized", http.StatusUnauthorized)
+		 return
+	 }
+
 	if chatID == "" {
 		respondWithError(w, http.StatusBadRequest, "Invalid chat ID")
 		return
@@ -144,7 +151,7 @@ func (h *ChatHandler) GetChatMessages(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	messages, err := h.chatService.GetChatMessages(r.Context(), chatID) // pass string
+	messages, err := h.chatService.GetChatMessages(r.Context(), chatID, user.ID) // pass string
 	if err != nil {
 		respondWithError(w, http.StatusInternalServerError, err.Error())
 		return

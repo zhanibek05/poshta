@@ -21,7 +21,7 @@ type ChatService interface {
 	CreateChat(ctx context.Context, chat reqresp.CreateChatRequest) (models.Chat, error)
 	GetUserChats(ctx context.Context, userID string) ([]reqresp.GetChatResponse, error)
 	GetChatByID(ctx context.Context, chatID string) (*models.Chat, error)
-	GetChatMessages(ctx context.Context, chatID string) ([]models.Message, error)
+	GetChatMessages(ctx context.Context, chatID string, userID string) (reqresp.Chat, error)
 	DeleteChat(ctx context.Context, chatID string) (string, error)
 }
 
@@ -39,13 +39,34 @@ func NewChatService(chatRepo repository.ChatRepository, userRepo repository.User
 
 
 func (s *chatService) CreateChat(ctx context.Context, req reqresp.CreateChatRequest) (models.Chat, error) {
-	// existingChat, err := s.chatRepo.GetByUsersID(ctx, int64(req.User1ID), int64(req.User2ID))
-	// if err != nil {
-	// 	return models.Chat{}, err
-	// }
-	// if existingChat != nil {
-	// 	return *existingChat, nil
-	// }
+
+	// check users exist
+	existingUser1, err := s.userRepo.GetByID(ctx, req.User1ID)
+	if err != nil {	
+		return models.Chat{}, fmt.Errorf("%w: %v", ErrInternal, err)
+	}
+	if existingUser1 == nil {
+		return models.Chat{}, ErrUserNotFound	
+	}
+
+	existingUser2, err := s.userRepo.GetByID(ctx, req.User2ID)
+	if err != nil {
+		return models.Chat{}, fmt.Errorf("%w: %v", ErrInternal, err)
+	}
+	if existingUser2 == nil {
+		return models.Chat{}, ErrUserNotFound
+	}
+
+	
+
+	// check if chat with these users already exists
+	existingChat, err := s.chatRepo.GetByUsersID(ctx, (req.User1ID), (req.User2ID))
+	if err != nil {
+		return models.Chat{}, err
+	}
+	if existingChat != nil {
+		return *existingChat, nil
+	}
 
 	// Create chat
 	chat := models.Chat{
@@ -122,8 +143,38 @@ func (s *chatService) GetChatByID(ctx context.Context, chatID string) (*models.C
 
 }
 
-func (s *chatService) GetChatMessages(ctx context.Context, chatID string) ([]models.Message, error) {
-	return s.chatRepo.GetMessages(ctx, chatID)
+func (s *chatService) GetChatMessages(ctx context.Context, chatID string, userID string) (reqresp.Chat, error) {
+	messages, err := s.chatRepo.GetMessages(ctx, chatID)
+	if err != nil {
+		return reqresp.Chat{}, err
+	}
+
+	chat, err := s.chatRepo.GetByID(ctx, chatID)
+	if err != nil {
+		return reqresp.Chat{}, err
+	}
+
+	var otherUserID string
+
+	if chat.User1ID == userID {
+		otherUserID = chat.User2ID
+	} else {
+		otherUserID = chat.User1ID
+	}
+
+	otherUser, err := s.userRepo.GetByID(ctx, otherUserID)
+	if err != nil {
+		return reqresp.Chat{}, err
+	}
+
+	return reqresp.Chat{
+		ChatID:   chat.ID,
+		Username: otherUser.Username,
+		Messages: messages,	
+	}, nil
+
+
+	
 }
 
 func (s* chatService) DeleteChat(ctx context.Context, chatID string) (string, error) {

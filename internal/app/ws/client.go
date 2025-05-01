@@ -6,7 +6,6 @@ import (
 	"poshta/internal/domain/models"
 	"poshta/internal/usecase"
 	"poshta/pkg/reqresp"
-
 	"github.com/gorilla/websocket"
 )
 
