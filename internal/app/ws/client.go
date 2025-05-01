@@ -3,7 +3,6 @@ package ws
 import (
 	"context"
 	"encoding/json"
-	"poshta/internal/domain/models"
 	"poshta/internal/usecase"
 	"poshta/pkg/reqresp"
 	"github.com/gorilla/websocket"
@@ -28,32 +27,62 @@ func (c *Client) ReadPump(messageUseCase usecase.MessageUseCase, chatUseCase use
 			break
 		}
 
-		var msg models.Message
+		var msg reqresp.WSMessage
 		if err := json.Unmarshal(msgBytes, &msg); err != nil {
 			continue
 		}
 
-		// сохраняем в БД
-		_, _ = messageUseCase.SendMessage(context.Background(), reqresp.SendMessageRequest{
-			ChatID:   msg.ChatID,
-			SenderID: msg.SenderID,
-			Content:  msg.Content,
-			EncryptedKey: msg.EncryptedKey,
-		})
+		switch msg.Type {
+		case "message":
+			// сохраняем в БД
+			_, _ = messageUseCase.SendMessage(context.Background(), reqresp.SendMessageRequest{
+				ChatID:   msg.ChatID,
+				SenderID: msg.SenderID,
+				Content:  msg.Content,
+				EncryptedKey: msg.EncryptedKey,
+			})
 
 
 
-		// получаем чат и второго пользователя
-		chat, _ := chatUseCase.GetChatByID(context.Background(), msg.ChatID)
-		recipient := chat.User1ID
-		if recipient == msg.SenderID {
-			recipient = chat.User2ID
+			// получаем чат и второго пользователя
+			chat, _ := chatUseCase.GetChatByID(context.Background(), msg.ChatID)
+			recipient := chat.User1ID
+			if recipient == msg.SenderID {
+				recipient = chat.User2ID
+			}
+
+			c.Hub.SendTo <- TargetedMessage{
+				RecipientIDs: []string{msg.SenderID, recipient},
+				Message:      msgBytes,
+			}
+
+
+		case "typing":
+			chat, _ := chatUseCase.GetChatByID(context.Background(), msg.ChatID)
+			recipient := chat.User1ID
+			if recipient == msg.SenderID {
+				recipient = chat.User2ID
+			}
+
+			// Пересылаем сообщение с типом "typing"
+			c.Hub.SendTo <- TargetedMessage{
+				RecipientIDs: []string{recipient}, // Только получателю
+				Message:      msgBytes,             // передаем оригинальное сообщение "typing"
+			}
+		
+		case "offline":
+			chat, _ := chatUseCase.GetChatByID(context.Background(), msg.ChatID)
+			recipient := chat.User1ID
+			if recipient == msg.SenderID {
+				recipient = chat.User2ID
+			}
+			c.Hub.SendTo <- TargetedMessage{
+				RecipientIDs: []string{recipient},
+				Message:      msgBytes,             
+			}
 		}
 
-		c.Hub.SendTo <- TargetedMessage{
-			RecipientIDs: []string{msg.SenderID, recipient},
-			Message:      msgBytes,
-		}
+	
 	}
 }
 

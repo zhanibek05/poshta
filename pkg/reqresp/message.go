@@ -12,3 +12,11 @@ type SendMessageRequest struct {
 type ErrorResponse struct {
 	Error string `json:"error"`
 }
+
+type WSMessage struct {
+	Type         string `json:"type"`          // "typing" или "message"
+	ChatID       string `json:"chat_id"`
+	SenderID     string `json:"sender_id"`
+	Content      string `json:"content,omitempty"`  // только для "message"
+	EncryptedKey string `json:"encrypted_key,omitempty"` // только для "message"
+}
