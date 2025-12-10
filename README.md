@@ -346,7 +346,7 @@ When a `CONTRIBUTING.md` file is added, please follow the guidelines described t
 ## Authors
 
 * **Zhanibek Beisenov** – [GitHub](https://github.com/zhanibek05)
-* **Danyar Dautbaev** – [GitHub](https://github.com/daniyardautbaev)
+* **Daniyar Dautbaev** – [GitHub](https://github.com/daniyardautbaev)
 
 ---
 
@@ -360,7 +360,7 @@ Once the `LICENSE` file is added, it will contain the full license text.
 ## Copyright
 
 Copyright (c) 2025
-**Zhanibek Beisenov**, **Danyar Dautbaev**
+**Zhanibek Beisenov**, **Daniyar Dautbaev**
 
 See the [License](#license) section and `LICENSE` file for details.
 
